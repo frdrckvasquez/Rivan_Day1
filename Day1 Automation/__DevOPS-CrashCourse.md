@@ -1,5 +1,5 @@
 
-<!-- Your monitor number = #$34T# -->
+<!-- Your monitor number = 22 -->
 
 ## SETUP
 Setup:  
@@ -74,7 +74,7 @@ conf t
   ip add 192.168.102.11 255.255.255.0
   no shut
  int g3
-  ip add 11.11.11.113 255.255.255.224
+  ip add 11.11.11.113 255.255.255.4
   no shut
  !
  username admin privilege 15 secret pass
@@ -102,7 +102,7 @@ VMWare > NetOps-PH Settings > NetAdapter (2, 3, & 4) > Advance > MAC Address
 | NetAdapter   | MAC Address      | VM Interface | ENS     |
 | ---          | ---              | ---          | ---     |
 | NetAdapter 2 | ___.___.___.___  | ens___       |  ens192 |
-| NetAdapter 3 | ___.___.___.___  | ens___       |  ens224 |
+| NetAdapter 3 | ___.___.___.___  | ens___       |  ens4 |
 | NetAdapter 4 | ___.___.___.___  | ens___       |  ens256 |
 
 <br>
@@ -118,15 +118,15 @@ ip -br link
 3. Modify Interface IP
 VMNet2:  192.168.102.6/24
 VMNet3:  11.11.11.100/27
-Bridged: 10.#$34T#.1.6/24
+Bridged: 10.22.1.6/24
 
 <br>
 
 ~~~
 !@NetOps-PH
 ifconfig ens192 192.168.102.6 netmask 255.255.255.0 up
-ifconfig ens224 11.11.11.100 netmask 255.255.255.224 up
-ifconfig ens256 10.#$34T#.1.6 netmask 255.255.255.0 up
+ifconfig ens4 11.11.11.100 netmask 255.255.255.4 up
+ifconfig ens256 10.22.1.6 netmask 255.255.255.0 up
 ~~~
 
 <br>
@@ -166,7 +166,7 @@ nmcli connection up VMNET2
 nmcli connection add \
 type ethernet \
 con-name VMNET3 \
-ifname ens224 \
+ifname ens4 \
 ipv4.method manual \
 ipv4.addresses 11.11.11.100/27 \
 autoconnect yes
@@ -178,14 +178,14 @@ type ethernet \
 con-name BRIDGED \
 ifname ens256 \
 ipv4.method manual \
-ipv4.addresses 10.#$34T#.1.6/24 \
+ipv4.addresses 10.22.1.6/24 \
 autoconnect yes
 
 nmcli connection up BRIDGED
 
-ip route add 10.0.0.0/8 via 10.#$34T#.1.4 dev ens256
-ip route add 200.0.0.0/24 via 10.#$34T#.1.4 dev ens256
-ip route add 0.0.0.0/0 via 11.11.11.113 dev ens224
+ip route add 10.0.0.0/8 via 10.22.1.4 dev ens256
+ip route add 200.0.0.0/24 via 10.22.1.4 dev ens256
+ip route add 0.0.0.0/0 via 11.11.11.113 dev ens4
 ~~~
 
 &nbsp;
@@ -213,17 +213,17 @@ rm -rf /root/.ssh/known_hosts
 SSH to the ff devices:
 ~~~
 !@NetOps
-ssh admin@10.#$34T#.1.2
+ssh admin@10.22.1.2
 ~~~
 
 <br>
 
 | IP                 | Device   |
 | ---                | ---      |
-| 10.#$34T#.1.2      | CoreTaas |
-| 10.#$34T#.1.4      | CoreBaba |
-| 10.#$34T#.100.8    | CUCM     |
-| 10.#$34T#.#$34T#.1 | EDGE     |
+| 10.22.1.2      | CoreTaas |
+| 10.22.1.4      | CoreBaba |
+| 10.22.100.8    | CUCM     |
+| 10.22.22.1 | EDGE     |
 
 <br>
 
@@ -375,21 +375,21 @@ conf t
 cbaba.json
 ~~~
 {
-    "monitor_number": "#$34T#",
+    "monitor_number": "22",
     
     "device_config": {
-        "hostname": "CoreBaba-#$34T#",
+        "hostname": "CoreBaba-22",
         "address": {
             "vlan_70": {
-                "ipv4": "10.#$34T#.70.4",
+                "ipv4": "10.22.70.4",
                 "desc": "BLUETEAM"
             },
             "vlan_71": {
-                "ipv4": "10.#$34T#.71.4",
+                "ipv4": "10.22.71.4",
                 "desc": "REDTEAM"
             },
             "vlan_72": {
-                "ipv4": "10.#$34T#.72.4",
+                "ipv4": "10.22.72.4",
                 "desc": "AUDIT"
             }
         },
@@ -1105,7 +1105,7 @@ Send Configurations
 import cli
 
 commands = '''
-hostname UTM-PH-#$34T#
+hostname UTM-PH-22
 '''
 
 cli.configurep(commands)
@@ -1324,7 +1324,7 @@ list_of_device = list_of_device.split()
 ### Device Information
 device_info = {
     'device_type': 'cisco_ios_telnet',
-    'host': '10.#$34T#.1.2',
+    'host': '10.22.1.2',
     'username': 'admin',
     'password': 'pass',
     'secret': 'pass',
@@ -1369,14 +1369,14 @@ def get_devices():
     return active_pc
 
 def get_configs(user_m, add_dn=''):
-    list_of_pcs = ['11','12','21','22','31','32','41','42','51','52','61','62','71','72','81','82','91','92']
+    list_of_pcs = ['11','12','21','','31','32','41','42','51','52','61','62','71','72','81','82','91','92']
     configs = [
         'telephony-service',
         f'ip source-address 10.{user_m}.100.8 port 2000',
         'ephone-dn 1',
         f'number {add_dn}{user_m}11',
         'ephone-dn 2',
-        f'number {add_dn}{user_m}22',
+        f'number {add_dn}{user_m}',
         'ephone-dn 3',
         f'number {add_dn}{user_m}33',
         'ephone-dn 4',
@@ -1421,7 +1421,7 @@ def get_configs(user_m, add_dn=''):
 def config_devices(user_m, add_dn='', terminal=False):
     device_info = {
         'device_type': 'cisco_ios_telnet',
-        'host': f'10.#$34T#.100.8',
+        'host': f'10.22.100.8',
         'username': 'admin',
         'password': 'pass',
         'secret': 'pass'
@@ -1609,7 +1609,7 @@ Error Occured: {fail}
 
 ## EEM
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 conf t
  int loop 0
   ip add 1.0.0.1 255.255.255.255
@@ -1623,7 +1623,7 @@ conf t
 Duplicate Session, Terminal Monitoring
 
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 config t
 no event manager applet WatchLo0
 event manager applet WatchLo0
@@ -1641,7 +1641,7 @@ event manager run WatchLo0
 
 ### 2. Send basic command (loop 14 & 15)
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 config t
 no event manager applet addloop
 event manager applet addloop
@@ -1668,7 +1668,7 @@ event manager run addloop
 
 ### 3. Generate Loopbacks
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 config t
 no event manager applet createloop
 event manager applet createloop
@@ -1695,7 +1695,7 @@ event manager run createloop
 
 ### 4. Delete Loopbacks
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 config t
 no event manager applet removeloop
 event manager applet removeloop
@@ -1719,7 +1719,7 @@ event manager run removeloop
 
 ### 5. How to get your boss fired
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 config t
 no event manager applet byebye
 event manager applet byebye
@@ -1772,22 +1772,22 @@ type ethernet \
 con-name BRIDGED \
 ifname ens256 \
 ipv4.method manual \
-ipv4.addresses 10.#$34T#.1.6/24 \
+ipv4.addresses 10.22.1.6/24 \
 autoconnect yes
 
 nmcli connection up BRIDGED
 
-route add 10.0.0.0/8 via 10.#$34T#.1.4
-route add 200.0.0.0/24 via 10.#$34T#.1.4
+route add 10.0.0.0/8 via 10.22.1.4
+route add 200.0.0.0/24 via 10.22.1.4
 ~~~
 
 <br>
 
 ~~~
 !@NetOps
-ifconfig ens256 10.#$34T#.1.6 netmask 255.255.255.0 up
-route add 10.0.0.0/8 via 10.#$34T#.1.4
-route add 200.0.0.0/24 via 10.#$34T#.1.4
+ifconfig ens256 10.22.1.6 netmask 255.255.255.0 up
+route add 10.0.0.0/8 via 10.22.1.4
+route add 200.0.0.0/24 via 10.22.1.4
 ~~~
 
 &nbsp;
@@ -1795,7 +1795,7 @@ route add 200.0.0.0/24 via 10.#$34T#.1.4
 &nbsp;
 
 ### Agentless vs Agentbased
-Ansible - SSH (22)
+Ansible - SSH ()
 Puppet - Master (8143) & Agent (8142)  
 Chef - Server (10000 & 10002) & Client  
 
@@ -1946,8 +1946,8 @@ __Playbook (add_loop.yml)__
 __hosts (Inventory)__
 ~~~
 [realdevices]
-ctaas ansible_host=10.#$34T#.1.2 ansible_user=admin ansible_password=pass
-cbaba ansible_host=10.#$34T#.1.4 ansible_user=rivan ansible_password=C1sc0123
+ctaas ansible_host=10.22.1.2 ansible_user=admin ansible_password=pass
+cbaba ansible_host=10.22.1.4 ansible_user=rivan ansible_password=C1sc0123
 
 [realdevices:vars]
 ansible_connection=network_cli
@@ -2032,15 +2032,15 @@ nano real_devices.ini
 
 ~~~
 [real_cisco]
-CTAAS ansible_host=10.#$34T#.1.2
-CBABA ansible_host=10.#$34T#.1.4
-CUCM ansible_host=10.#$34T#.100.8
-EDGE ansible_host=10.#$34T#.#$34T#.1
+CTAAS ansible_host=10.22.1.2
+CBABA ansible_host=10.22.1.4
+CUCM ansible_host=10.22.100.8
+EDGE ansible_host=10.22.22.1
 UTM-PH ansible_host=11.11.11.113
 
 [real_cisco:vars]
 ansible_connection=network_cli
-ansible_port=22
+ansible_port=
 ansible_become=yes
 ansible_become_method=enable
 ansible_network_os=ios
@@ -2149,12 +2149,12 @@ nano group_vars/real_cisco.yml
 interfaces:
   - name: Loopback1
     desc: Made via Ansible
-    ip: #$34T#.0.1.1
+    ip: 22.0.1.1
     mask: 255.255.255.255
 
   - name: Loopback2
     desc: Made via Ansible
-    ip: #$34T#.0.2.1
+    ip: 22.0.2.1
     mask: 255.255.255.255
 ~~~
 
@@ -2173,12 +2173,12 @@ nano host_vars/CBABA.yml
 interfaces:
   - name: Loopback1
     desc: Made via Ansible
-    ip: #$34T#.0.1.4
+    ip: 22.0.1.4
     mask: 255.255.255.255
 
   - name: Loopback2
     desc: Made via Ansible
-    ip: #$34T#.0.2.4
+    ip: 22.0.2.4
     mask: 255.255.255.255
 ~~~
 
@@ -2196,12 +2196,12 @@ nano host_vars/CTAAS.yml
 interfaces:
   - name: Loopback1
     desc: Made via Ansible
-    ip: #$34T#.0.1.2
+    ip: 22.0.1.2
     mask: 255.255.255.255
 
   - name: Loopback2
     desc: Made via Ansible
-    ip: #$34T#.0.2.2
+    ip: 22.0.2.2
     mask: 255.255.255.255
 ~~~
 
@@ -2259,13 +2259,13 @@ dhcp_pool:
     exclude_last: 10.11.1.100
 
   - name: hrpool
-    network: 10.22.1.0
+    network: 10..1.0
     net_mask: 255.255.255.0
-    gateway: 10.22.1.1
-    dns_server: 10.22.1.10
+    gateway: 10..1.1
+    dns_server: 10..1.10
     domain_name: HR.COM
-    exclude_first: 10.22.1.1
-    exclude_last: 10.22.1.100
+    exclude_first: 10..1.1
+    exclude_last: 10..1.100
 ~~~
 
 <br>
@@ -2296,7 +2296,7 @@ ansible_project/playbooks/deploy_dhcp.yml
 Enable RESTCONF
 
 ~~~
-!@UTM-PH-#$34T#
+!@UTM-PH-22
 conf t
  username admin privilege 15 secret pass
  ip http secure-server
@@ -2334,7 +2334,7 @@ resource "iosxe_interface_loopback" "example" {
   name               = 3
   description        = "My First TF Script Attempt"
   shutdown           = false
-  ipv4_address       = "#$34T#.0.3.1"
+  ipv4_address       = "22.0.3.1"
   ipv4_address_mask  = "255.255.255.255"
 }
 ~~~
@@ -2404,8 +2404,8 @@ type cisco_ios_interfaceurl file:////etc/puppetlabs/puppet/devices/rivan.com.con
 
 __Credentials__
 ~~~
-host: "10.#$34T#.1.4"
-port: 22
+host: "10.22.1.4"
+port: 
 user: admin
 password: password
 enable_password: password
@@ -2419,7 +2419,7 @@ enable_password: password
 
 ### RESTCONF
 ~~~
-!@DEVOPS-#$34T#
+!@DEVOPS-22
 conf t
  username admin privilege 15 secret pass
  ip http secure-server
