@@ -1,0 +1,26 @@
+{
+    "monitor_number": "22",
+    
+    "device_config": {
+        "hostname": "CoreBaba-22",
+        "address": {
+            "vlan_70": {
+                "ipv4": "10.22.70.4",
+                "desc": "BLUETEAM"
+            },
+            "VLAN_700":{
+                "ipv4": "10.22.200.4",
+                "desc": "DEVOPS"
+            },
+            "vlan_71": {
+                "ipv4": "10.22.71.4",
+                "desc": "REDTEAM"
+            },
+            "vlan_72": {
+                "ipv4": "10.22.72.4",
+                "desc": "AUDIT"
+            }
+        },
+        "logging_console": false
+    }
+}
